@@ -6,11 +6,25 @@ This repository holds **documentation only** — no application code and no cred
 
 ## Contents
 
+Admin guides, one per sidebar section:
+
 | Doc | What it covers |
 |-----|----------------|
-| [Admin settings](docs/admin-settings.md) | Every section of the admin Settings page and what it controls |
-| [Payments & store modes](docs/payments-and-modes.md) | Stripe gateway, guest checkout, enquiry mode, purchasing mode |
-| [Media gallery](docs/media-gallery.md) | Admin media library, attachment details, and the product/variant picker modal |
+| [Dashboard](docs/admin-dashboard.md) | The overview screen: stat cards, quick actions |
+| [Hero slideshow](docs/hero-slideshow.md) | Homepage banner — slideshow & single-image modes |
+| [Products](docs/admin-products.md) | Product list, filters/sort, editor, variants |
+| [Categories](docs/admin-categories.md) | Category tree, nesting, slugs |
+| [Media gallery](docs/media-gallery.md) | Media library, attachment details, picker modal |
+| [Blog](docs/admin-blog.md) | Posts: editor, publishing behaviour |
+| [Enquiries](docs/admin-enquiries.md) | Enquiry-mode customer requests |
+| [Orders](docs/admin-orders.md) | Stripe orders & statuses |
+| [Emails](docs/admin-emails.md) | Notification templates & delivery |
+| [Event Logs](docs/admin-event-logs.md) | System event log & troubleshooting |
+| [Admin settings](docs/admin-settings.md) | Every Settings card |
+| [Payments & store modes](docs/payments-and-modes.md) | Stripe, guest checkout, enquiry vs purchasing |
+
+**Maintaining these docs:** see [CONTRIBUTING.md](CONTRIBUTING.md) — how to amend/extend without
+destroying existing guides.
 
 ## Platform at a glance
 
