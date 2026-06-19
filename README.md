@@ -1,7 +1,6 @@
-# Fire Safe Australia — E-commerce Guideline
+# E-commerce Platform — Guideline
 
-Operating and development guidelines for the **Fire Safe Australia** catalogue / e-commerce website
-([firesafeaustralia.com.au](https://firesafeaustralia.com.au)).
+Operating and feature documentation for the catalogue / e-commerce platform.
 
 This repository holds **documentation only** — no application code and no credentials.
 
@@ -9,20 +8,14 @@ This repository holds **documentation only** — no application code and no cred
 
 | Doc | What it covers |
 |-----|----------------|
-| [01 — Overview](docs/01-overview.md) | What the platform is, stack, brand kit |
-| [02 — Architecture](docs/02-architecture.md) | File layout, routing, settings system |
-| [03 — Admin guide](docs/03-admin-guide.md) | Day-to-day admin: products, categories, blog, hero, featured, settings |
-| [04 — Media library](docs/04-media-library.md) | Uploading, the image picker, editing, compression |
-| [05 — Emails](docs/05-emails.md) | Email templates & delivery (SMTP) |
-| [06 — Deployment](docs/06-deployment.md) | How changes go live (FTP), server constraints |
-| [07 — Content guidelines](docs/07-content-guidelines.md) | Image specs, SEO, alt text, tone |
+| [Admin settings](docs/admin-settings.md) | Every section of the admin Settings page and what it controls |
+| [Payments & store modes](docs/payments-and-modes.md) | Stripe gateway, guest checkout, enquiry mode, purchasing mode |
+| [Media gallery](docs/media-gallery.md) | Admin media library, attachment details, and the product/variant picker modal |
 
-## Quick facts
+## Platform at a glance
 
-- **Stack:** vanilla PHP 8 code running on **PHP 7.4** shared hosting (GoDaddy cPanel), MySQL/PDO, no build step.
-- **Mode:** enquiry-first ("Enquire for price"); optional Stripe checkout toggle.
-- **Brand:** orange `#F97316` / `#EA580C`, ember `#FBBF24`, ink `#17120F`; fonts Archivo / IBM Plex Sans / IBM Plex Mono.
-- **Contact:** 795 Thompson Road, Lyndhurst · 0449 794 559 · info@firesafeaustralia.com.au
+- **Stack:** vanilla PHP (8-style code, runs on PHP 7.4 shared hosting), MySQL via PDO, no build step.
+- **Default mode:** enquiry-first ("Enquire for price"); online payments are an optional toggle.
+- **Settings:** stored as JSON rows in a `settings` table; secrets encrypted at rest (AES-256-GCM).
 
-> ⚠️ **Credentials** (FTP, DB, admin login) are **never** stored in this repo. They live only in the local
-> `credentials.txt` on the maintainer's machine.
+> ⚠️ Credentials (FTP, database, admin login, API keys) are **never** stored in this repository.
