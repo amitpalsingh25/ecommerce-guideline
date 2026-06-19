@@ -29,6 +29,7 @@ Each doc = *how to build that section* (routes, data, UI, save logic, edge cases
 | [Settings](docs/admin-settings.md) | Branding, colours, modes, featured, SMTP, Stripe |
 | [Store modes & payments](docs/payments-and-modes.md) | Enquiry vs selling, Stripe |
 | [Customer accounts & commerce](docs/commerce-accounts.md) | **Future:** register, login, password reset, account, cart, checkout |
+| [Attribute variations & swatches](docs/variant-attributes-swatches.md) | **Future:** WooCommerce-style attributes, per-variation price/image/stock, colour/image/button swatches (backend + frontend) |
 
 **Maintaining these docs:** [CONTRIBUTING.md](CONTRIBUTING.md) — amend/extend without destroying existing
 specs.
