@@ -1,39 +1,35 @@
-# Admin → Categories
+# Build spec — Categories
 
-Path: **`/admin/categories`**
+**Goal:** CRUD for **self-nesting** categories used for navigation, filtering and URLs.
 
-The page is a two-column layout: the **category tree** on the left, an **Add category** form on the right.
+## Routes
+- `GET /admin/categories` — tree + add form. `POST` (no id) → create.
+- `GET /admin/categories/{id}` — edit. `POST /admin/categories/{id}` → update.
+- `POST /admin/categories/{id}/delete`.
 
-## Category tree (list)
+## Data — `categories`
+id, parent_id (self-FK, nullable = nesting), name, slug (unique, URL), position (sort), description, image.
 
-- Categories are shown as an indented **tree** — child categories are nested under their parent with a
-  `└` marker and deeper left-padding per level.
-- Each row shows: **Name**, **Products** count (products directly in that category), **Sub-cats** count,
-  and an **Edit** button.
+## Helpers to build
+- `subtree_ids($id)` — id + all descendant ids (load all rows once, walk children map). Used by the
+  product filter and category pages.
+- `category_options()` / a tree builder with depth for indented selects and the admin list.
 
-## Add / edit a category
+## Build — list + form (two columns)
+1. Left: render the category **tree** indented by depth (`└` marker), each row showing product count,
+   sub-cat count, Edit.
+2. Right: the **add/edit form** — Name (required), Slug (blank=auto), **Parent** select (Top level or any
+   category; a category can't be its own parent), Position (int), Description, Image upload.
+3. Save: slugify; `parent_id` blank→NULL; guard self-parent; upload image if provided; insert/update.
 
-| Field | Notes |
-|-------|-------|
-| **Name** | Required. |
-| **Slug** | Blank = auto-generated from the name. Used in the URL. |
-| **Parent** | "Top level" or any existing category — this is what creates nesting. A category can't be its own parent. |
-| **Position** | Sort order among siblings (lower = first). |
-| **Description** | Optional; shown on the category page. |
-| **Image** | Optional category image (file upload). |
+## Frontend usage (build accordingly)
+- Category page resolves the **full slug path** (`/category/a/b/c`) → deepest node + breadcrumbs +
+  children + products (products filtered by `subtree_ids(node)`).
 
-Editing opens the same form pre-filled, with **Save changes** and **Delete**.
+## Edge cases
+- Deleting a category just removes the row; its products keep existing (category_id dangling/NULL) —
+  don't cascade-delete products.
+- Keep slugs stable after publishing (they're URLs).
 
-## Nesting & URLs
-
-- Nesting uses a self-relation (`parent_id`) and supports **arbitrary depth**.
-- Category pages resolve the **full slug path**, e.g. `/category/<parent>/<child>/<grandchild>`, and show
-  breadcrumbs plus any sub-categories and products.
-- The product-list **category filter** matches the chosen category **and its whole sub-tree**, so picking
-  a parent shows products from all descendants.
-
-## Notes
-
-- Deleting a category removes the category row; products that pointed at it simply lose that association
-  (they remain, uncategorised) — re-assign them from the product editor if needed.
-- Keep slugs stable once published; changing a slug changes the category URL.
+## Acceptance
+- Arbitrary nesting depth works; picking a parent in filters returns descendants' products too.

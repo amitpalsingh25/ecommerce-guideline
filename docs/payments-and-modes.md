@@ -1,65 +1,40 @@
-# Payments & store modes
+# Build spec — Store modes & Stripe payments
 
-The store can run in two ways — **enquiry mode** (default) and **purchasing mode** — controlled by
-toggles under **Admin → Settings → Store mode**, plus the **Payments (Stripe)** card.
+**Goal:** one codebase that runs **enquiry-first** by default and can be switched to **online selling**.
 
-## Store modes
+## Toggles — `setting('toggles')`
+`sellingEnabled`, `enquiryEnabled`, `guestCheckout`. Plus `setting('stripe')` (enabled + encrypted keys).
 
-### Enquiry mode (default)
-- Prices are hidden; products show **"Enquire for price"**.
-- The cart is a **request list**. Checkout collects name / email / phone and sends an **enquiry email**
-  to the admin (and a confirmation to the customer).
-- No payment is taken.
+Build `payments_enabled()` ≈ `sellingEnabled && stripe.enabled && stripe.secretKey set`. Everything that
+shows price/checkout branches on this. If selling is on but Stripe isn't fully configured → **stay in
+enquiry mode** (safe fallback).
 
-### Purchasing mode (selling)
-- Prices are shown; the cart becomes a real cart and checkout goes to **Stripe Checkout**.
-- Requires **both**: *Enable selling* ON **and** valid Stripe keys with *Enable Stripe checkout* ON.
-
-The effective switch is `payments_enabled()` ≈ `sellingEnabled && stripe.enabled && stripe.secretKey set`.
-If selling is on but Stripe isn't fully configured, the store safely stays in enquiry mode.
-
-### Behaviour matrix
-
-| Enable selling | Stripe enabled + keys | Result |
+| sellingEnabled | stripe enabled + keys | Mode |
 |:---:|:---:|---|
-| Off | — | Enquiry mode. "Enquire for price", cart → enquiry email. |
-| On | No / incomplete | Still enquiry mode (safe fallback). |
-| On | Yes | Purchasing mode. Prices shown, checkout → Stripe. |
+| off | — | Enquiry: "Enquire for price", cart → enquiry email |
+| on | no | Enquiry (fallback) |
+| on | yes | Purchasing: prices shown, checkout → Stripe |
 
 ## Guest checkout
+- `guestCheckout` lets visitors order/enquire without an account. This build is guest-first; keep the flag
+  as the hook point if you later gate checkout behind login (see [commerce-accounts](commerce-accounts.md)).
 
-- **Allow guest checkout** (Store mode toggle) lets visitors enquire / order **without an account**.
-- This build is guest-first: there is no customer login required to send an enquiry or pay.
-- Turning it off is the hook point if account-gated checkout is added later.
+## Stripe — build (no SDK, raw cURL)
+1. Keys in Settings → Payments, **encrypted** (`enc()`); decrypt on read.
+2. **Checkout** (`POST /stripe/checkout`): validate; create a **pending** order with line items
+   **re-priced from the DB** (never trust client prices) + total; create a Checkout Session via
+   `POST https://api.stripe.com/v1/checkout/sessions` (Bearer secret key) with `success_url`/`cancel_url`;
+   store `stripe_session`; redirect to the session URL. On failure → mark order `failed`.
+3. **Webhook** (`POST /stripe/webhook`): read raw body + `Stripe-Signature`; verify with
+   `hash_hmac('sha256', "$t.$payload", webhookSecret)` + `hash_equals`; on `checkout.session.completed`
+   mark the order `paid` and send order emails. Show the webhook URL in Settings for registration.
 
-## Stripe payment gateway
+## Security
+- Re-price server-side at checkout.
+- Reject webhooks with an invalid signature.
+- Store secret + webhook secret encrypted; never echo them.
 
-Keys live under **Settings → Payments** and are **encrypted at rest**:
-
-- **Publishable key** (`pk_…`) — safe for the client.
-- **Secret key** (`sk_…`) — encrypted; used server-side only.
-- **Webhook signing secret** (`whsec_…`) — encrypted; verifies incoming webhooks.
-
-### Setup
-
-1. Enter the publishable + secret keys, tick **Enable Stripe checkout**, and turn on **Enable selling**.
-2. Copy the **Webhook URL** shown on the Settings card.
-3. In the Stripe dashboard → Developers → Webhooks, add that URL for the
-   `checkout.session.completed` event, and paste the generated **signing secret** back into Settings.
-4. Test with Stripe test keys + test cards before switching to live keys.
-
-### Checkout flow
-
-1. Customer checks out → an **order row is created** with status `pending` and its line items are
-   **re-priced from the database** (never trusting client prices).
-2. The server creates a **Stripe Checkout Session** (via the Stripe REST API) and redirects the
-   customer to Stripe's hosted page.
-3. On payment, Stripe calls the **webhook**. The signature is verified against the signing secret.
-4. On `checkout.session.completed`, the order is marked **paid** and the **order emails** are sent
-   (admin notification + customer confirmation).
-
-### Security notes
-
-- Prices are always recomputed server-side at checkout.
-- Webhook requests are rejected unless the Stripe signature validates.
-- Secret keys and webhook secrets are stored encrypted and never returned to the browser.
+## Acceptance
+- Default deploy works with zero payment config (enquiry mode).
+- Turning on selling + valid keys flips prices/checkout to Stripe; test-mode card → order marked paid via
+  webhook → order emails sent.

@@ -1,42 +1,29 @@
-# Admin → Enquiries
+# Build spec — Enquiries
 
-Path: **`/admin/enquiries`**
+**Goal:** capture and manage no-payment customer requests (the default "enquiry mode" flow).
 
-Customer requests sent in **enquiry mode** (the default, no-payment flow). Distinct from **Orders**, which
-are Stripe payments.
+## Routes
+- `GET /admin/enquiries` — list. `GET /admin/enquiries/{id}` — detail.
+- `POST /admin/enquiries/{id}` — update status (CSRF).
 
-## Enquiry list
+## Data — `enquiries`
+id, name, email, phone, items JSON `[{sku,title,qty}]`, message, status enum(new,responded,closed),
+created_at.
 
-Columns: **From** (name), **Email**, **Items** (line count · total units), **Status** badge, **Received**
-date, **View**.
+## Build — capture (public)
+`POST` enquiry handler: validate name + email + items; store row; send **two emails** (admin notification
++ customer confirmation) via the email templates; log the result; redirect with a "sent" flag.
 
-## Enquiry detail
+## Build — list
+Table: From (name), Email, Items (line count · total units), Status badge, Received, View.
 
-Two panels:
-
-**Contact** — name, email (mailto link), phone, received date, and a **Status** dropdown
-(`New` / `Responded` / `Closed`) that **auto-saves on change**. The customer's **message** is shown if
-provided.
-
-**Requested items** — a table of SKU / item / quantity from the cart at submission time.
-
-## How an enquiry is created
-
-1. A visitor builds a cart and submits the checkout form (name / email / phone / message).
-2. An enquiry row is stored and **two emails** are sent: the admin notification and the customer
-   confirmation (see [Emails](admin-emails.md)).
-3. It lands here as **New**; update the status as you work it.
-
-## Status meanings
-
-| Status | Use |
-|--------|-----|
-| **New** | Just received, not actioned. |
-| **Responded** | You've replied with pricing/availability. |
-| **Closed** | Done / no longer active. |
+## Build — detail
+Two panels: **Contact** (name, mailto email, phone, received) with a **status select that auto-submits**
+(`new`/`responded`/`closed`), plus the message; **Requested items** table (SKU/title/qty from the JSON).
 
 ## Notes
+- Dashboard "New enquiries" = rows with `status='new'`.
+- Enquiries are independent of Orders (payments). Both can exist depending on store mode.
 
-- The Dashboard "New enquiries" count reflects rows still in `New`.
-- Enquiries are independent of Orders — if you switch the store to purchasing mode, paid orders appear
-  under Orders instead.
+## Acceptance
+- Submitting the cart creates an enquiry + sends both emails; status changes persist instantly.

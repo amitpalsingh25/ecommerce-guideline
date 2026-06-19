@@ -1,80 +1,52 @@
-# Media gallery
+# Build spec — Media library, picker & product imagery
 
-Covers the admin **Media library**, the **Attachment details** view, the reusable **image picker
-modal** used in the product editor, and how images surface on the **product page**.
+**Goal:** a reusable image system: a library page, a picker modal for any image field, client-side
+compression, and a server-side image editor.
 
----
+## Routes (all under `require_admin`)
+- `GET /admin/media` — library page.
+- `GET /admin/media/list` — JSON `{files:[{name,url}]}` (scan `/uploads`).
+- `GET /admin/media/info?name=` — JSON: name,url,w,h,type,size,mtime,title,alt,used[],gd.
+- `POST /admin/media/save` — set title/alt (CSRF).
+- `POST /admin/media/edit` — GD op (CSRF): rotate/flip/scale/crop.
+- `POST /admin/media/delete` — unlink (CSRF).
+- `POST /admin/upload` — generic upload → `{url}`.
 
-## Admin → Media library (`/admin/media`)
+## Storage
+- Files live in `/uploads` (the library = a listing of that folder, image extensions only).
+- Title/Alt stored in `setting('media_meta')` keyed by file name (no DB table/migration).
 
-A grid of every uploaded image.
+## Build — client compression (before every upload)
+Canvas: downscale to **≤1000px wide**, re-encode **WebP ~0.85**; keep transparency; skip gif/svg/avif;
+never upscale; if compressed isn't smaller and wasn't downscaled, keep original. Use for both the library
+upload and the picker upload.
 
-- **Upload images** — multi-file upload button. Files are **compressed in the browser before upload**:
-  downscaled to **≤ 1000 px wide** and re-encoded to **WebP (~0.85 quality)** — smaller files, same
-  visible quality. Transparency is preserved; GIF/SVG/AVIF are left untouched.
-- **Click an image** → opens the **Attachment details** modal.
-- Each tile has a quick **delete** (×) control.
+## Build — picker modal (`media.js`, `window.FSAMedia.pick(cb)`)
+Two panes: selectable grid (left) + details (right). Top: title, **search** (filter by name), **Upload**.
+Drag-and-drop onto the grid uploads. Click selects (✓); double-click or **Use this image** confirms →
+`cb(url)`. Wire any `[data-img-field]` widget: a `.img-pick` button opens the picker and writes the URL +
+thumb into the field; `.img-clear` empties it. Use event delegation so dynamically-added variant rows work.
 
-### Attachment details modal
+## Build — attachment details (library page)
+Click a tile → modal: file info (name/type/size/dimensions), **Title** + **Alt** (save), **URL** + copy
+icon (clipboard SVG, flips to ✓), **Used by** (query products.images LIKE + variant.image = url), and
+**Edit image** via GD: rotate L/R, flip H/V, scale (new width), crop (drag a box → natural-px coords).
+Edits **rewrite the same file** (same URL stays valid); cache-bust the preview with `?v=timestamp`. Guard
+when GD is absent.
 
-Two panes — preview + image tools on the left, metadata on the right.
+## Build — storefront imagery
+- `product_card()`: collect product images + every variant image (dedup). If a product has no main image
+  but a variant does, use the first variant image. With >1 image, render a **swatch row** (circular,
+  variant images, `+N` overflow). **Click** a swatch → slide the card's main image to it (ease slide
+  animation). Fixed responsive media height + `object-fit:contain` so uneven images don't shift layout.
+- Product detail: gallery (main + thumbnail strip from product+variant images); clicking a thumb or a
+  variant row swaps the main image. Don't let card-only CSS (fixed height/overflow) leak into the
+  detail gallery — scope it.
 
-**Right pane**
-- File name, type, size, **dimensions**.
-- **Title** and **Alternative text** — saved per image (used for accessibility / SEO).
-- **URL** field with a **copy icon** (click copies; shows a tick briefly).
-- **Used by** — lists the products/variants currently using this image, with links.
-- **Delete permanently**.
+## Edge cases
+- CSRF field name must match the server (`_csrf`).
+- Deleting a file → referencing products fall back to placeholder.
 
-**Left pane — Edit image** (server-side, in place so existing links keep working)
-- **Rotate** left / right (90°)
-- **Flip** horizontal / vertical
-- **Scale** to a new width
-- **Crop** — drag a box on the preview, then **Apply crop**
-
-Editing rewrites the same file (same URL), so any product already pointing at the image updates
-automatically. Image editing needs the **GD** extension on the server; if it's missing the editor
-shows a notice and the rest of the panel still works.
-
----
-
-## Reusable image picker (product & variant fields)
-
-Anywhere an image is set (product **main image**, each **variant image**), a **"Choose / upload"**
-field opens a WordPress-style picker modal:
-
-- **Two panes:** a selectable image grid on the left, a details sidebar on the right.
-- **Search** box to filter by file name.
-- **Drag-and-drop** or **Upload** to add new images (same compression as the library).
-- Click a tile to **select** (shows a tick); the sidebar shows preview + dimensions + URL.
-- Confirm with **"Use this image"** (or double-click a tile).
-
-Selected URLs are written into the form's hidden field, so the product/variant saves a reference to the
-file in the media library (no duplicate uploads).
-
----
-
-## How images appear on the storefront
-
-### Product card
-- The card collects **all** of a product's images (main image **plus every variant image**, de-duplicated).
-- If a product has no main image but a variant does, the card uses the **first variant image** instead
-  of the placeholder.
-- When there's more than one image, a row of **variant swatches** appears next to the size line.
-  **Clicking a swatch** slides the card's main image to that variant (active state shown with a border).
-- The image area is a **fixed responsive height** with `object-fit: contain` on a white background, so
-  uneven images never cause layout jumps.
-
-### Product detail page
-- The left side is a **gallery**: a large main image plus a **thumbnail strip** built from the product
-  and variant images.
-- Clicking a thumbnail, or a **variant row** in the size table, swaps the main image.
-- If a product has no images at all, a branded placeholder is shown instead.
-
----
-
-### Storage notes
-
-- Uploaded files live in the site's `/uploads` directory; the library simply lists that folder.
-- Image **Title/Alt** metadata is stored in settings (keyed by file name) — no database migration needed.
-- Deleting a file removes it from disk; products referencing it fall back to their placeholder.
+## Acceptance
+- Same picker works on product main image + each variant image; uploads compress; editing keeps URLs;
+  cards show variant swatches and never jump on image change.

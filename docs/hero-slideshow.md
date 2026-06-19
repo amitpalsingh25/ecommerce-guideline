@@ -1,61 +1,40 @@
-# Admin → Hero
+# Build spec — Hero
 
-Path: **`/admin/hero`**
+**Goal:** editable homepage banner with two modes — **slideshow** and **single image**.
 
-Controls the big banner at the top of the homepage. There are two **hero types**, chosen with a radio
-picker at the top of the page. A **Hero height (px)** field is always visible and applies to both types.
+## Route
+- `GET/POST /admin/hero` → `admin_hero()`.
 
----
+## Data — `setting('hero')` (with defaults via `hero()`)
+```
+mode: 'slideshow' | 'image'      // default 'slideshow'
+image: ''                        // single-image source
+height: 620                      // px (applies to both modes)
+transition: 'fade'|'slide', speed: 600, interval: 6   // slideshow
+padTop, padBottom, titleSize, subSize, eyebrowSize    // px
+slides: [ { image, eyebrow, heading, accent, sub, ctaText, ctaLink, cta2Text, cta2Link, align } ]
+```
 
-## Hero type
+## Build — admin
+1. **Type radio**: Slideshow vs Single image. JS toggles which block is visible. A **Hero height** field
+   is always visible (one `name="height"` only — don't duplicate it across hidden blocks or POST collides).
+2. **Single image block**: one image uploader → hidden `image` field.
+3. **Slideshow block**: display fields (transition/speed/interval/padding/type sizes) + a repeatable
+   **slides** editor (image upload, eyebrow, alignment, heading, accent, sub, 2× button text+link,
+   up/down reorder, remove, "add slide").
+4. Image uploads: resize client-side to ≤1920px, POST to the AJAX upload endpoint, store returned URL in
+   the row's hidden field.
+5. **Save**: rebuild the `slides` array from POST (skip fully-empty rows), persist whole `hero` object.
 
-### Slideshow
-A rotating set of slides with heading, text and buttons.
+## Build — render (`render_hero()`)
+- `mode==='image' && image` → output a plain full-bleed `<section>` with the image as background, **no
+  overlay/JS**.
+- else → slideshow: slides as layers; cross-fade or slide; show dots + prev/next when >1; autoplay when
+  interval>0; expose sizes/padding as CSS variables.
 
-**Display settings**
+## Edge cases
+- Single `height` input shared by both modes (avoid duplicate POST keys).
+- Hidden blocks still submit, so unused mode's data is preserved across saves.
 
-| Field | Effect |
-|-------|--------|
-| **Transition** | `Fade` or `Slide` between slides. |
-| **Transition speed (ms)** | Animation duration. |
-| **Auto-advance (seconds, 0 = off)** | Autoplay interval; `0` disables autoplay. |
-| **Padding top / bottom (px)** | Vertical spacing inside the hero. |
-| **Title / Sub-text / Eyebrow size (px)** | Type sizes for the slide text. |
-
-**Slides** — add as many as needed; each slide has:
-
-| Field | Notes |
-|-------|-------|
-| **Image** | Background image. Auto-resized to **≤ 1920 px** wide on upload. |
-| **Eyebrow** | Small label above the heading. |
-| **Alignment** | Left / Center / Right text alignment. |
-| **Heading** | Main line. |
-| **Highlighted word(s)** | Accent-coloured part of the heading. |
-| **Sub text** | Supporting paragraph. |
-| **Button 1 / Button 2** | Each has text + link (leave blank to omit). |
-| **Reorder / Remove** | ↑/↓ move a slide; Remove deletes it. |
-
-On the storefront: slides cross-fade or slide; if there's more than one, **dots + prev/next arrows**
-appear, and autoplay runs if the interval is non-zero. Empty slide rows are ignored on save.
-
-### Single image
-One plain image, **no text overlay, no slides** — just a clean full-width banner.
-
-- Upload a single **Hero image** (auto-resized to ≤ 1920 px).
-- Uses the same **Hero height** field for the banner height.
-
-Switching the radio to *Single image* hides the slideshow/slide editors; switching back hides the image
-field. Whatever you don't use is preserved, so you can flip between modes without losing content.
-
----
-
-## Save behaviour
-
-- The whole hero config is saved at once (mode, height, display settings, image, and the full slide list).
-- Slides are **replaced wholesale** on save; reorder/remove in the editor is the source of truth.
-- Sizes and padding are applied via CSS variables, so the same slide content adapts to the values you set.
-
-## Tips
-
-- Keep hero images wide and not too tall; the **Hero height** crops them to the banner area.
-- For a fast, image-only homepage banner, use **Single image** — it skips all slideshow JS and overlays.
+## Acceptance
+- Switching mode + save changes the homepage banner accordingly; slideshow autoplays only when interval>0.

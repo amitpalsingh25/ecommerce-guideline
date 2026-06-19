@@ -1,59 +1,47 @@
-# Admin → Products
+# Build spec — Products
 
-Path: **`/admin/products`**
+**Goal:** CRUD for products with optional per-size **variants** and media-library images.
 
-## Product list
+## Routes
+- `GET /admin/products` — list with filters.
+- `GET /admin/products/new`, `GET /admin/products/{id}` — form.
+- `POST /admin/products/{id}` / `POST /admin/products` (new) → `admin_product_save()`.
+- `POST /admin/products/{id}/delete`.
 
-A filter bar sits above the table; all controls submit together as URL query params and persist.
+## Data
+- `products` (see [BUILD-INSTRUCTIONS §6](../BUILD-INSTRUCTIONS.md)). `images` = JSON array (single main
+  URL in practice). `price` NULL = "Enquire".
+- `product_variants` (id, product_id, sku, label, price NULL, image NULL, position). Add `image` via lazy
+  migration (`ALTER TABLE … ADD COLUMN image` guarded by an information_schema check) on first save/form.
 
-| Control | Behaviour |
-|---------|-----------|
-| **Search** | Matches product **title**, product **SKU**, **category name**, and **variant SKU** (LIKE). |
-| **Category** | Filters to a category **and all its sub-categories** (full sub-tree). |
-| **Status** | All / Published / Draft. |
-| **Sort** | Newest, Oldest, Title A–Z, Title Z–A, Price low→high, Price high→low. |
-| **Apply / Clear** | Apply runs the filter; Clear resets. Header shows "· filtered" when active. |
+## Build — list
+1. Read `q` (search), `cat`, `status`, `sort` from query string.
+2. WHERE: search matches `title|sku|category name|variant sku` (LIKE); `cat` matches the category **and
+   its whole sub-tree** (`subtree_ids()` → `IN (...)`); `status` exact.
+3. ORDER BY map: new/old/az/za/price_low(`price IS NULL, price ASC`)/price_high. LIMIT 500.
+4. Render a filter bar (search field + category/status/sort selects + Apply/Clear) and a table
+   (Title +Featured badge, SKU or "N variants", Category, Price or "—"/Enquire, Status badge, Edit).
 
-Table columns: **Title** (with a *Featured* badge if featured), **SKU** (or "N variants" for variant
-products), **Category**, **Price** (or `—` for variant products / "Enquire" when no price), **Status**
-badge, and **Edit**. The list is capped at 500 rows.
+## Build — form
+- Top card: Title (required), SKU (blank if variants), Slug (blank=auto), Price (blank=Enquire), Category
+  select, Status, "Feature on homepage" checkbox.
+- **Main image**: reusable media picker → hidden `image_url`.
+- **Variants**: repeatable rows — compact image picker (`v_image[]`), label (`v_label[]`),
+  sku (`v_sku[]`), price (`v_price[]`), remove; "add size". Leave empty for a single-item product.
+- **Description**: `<textarea class="richtext">` (WYSIWYG → HTML).
+- Buttons: Save, View product (new tab), Delete.
 
-## New / edit product
+## Build — save
+1. CSRF; require title; slugify (blank=auto).
+2. price/category blank → NULL. images = `[image_url]` or `[]`.
+3. Insert/update product.
+4. **Replace variants wholesale**: delete all for product, re-insert non-empty rows in order with image.
+5. Redirect to `/admin/products/{id}?saved=1` (stay on page, show "saved" banner).
 
-Fields (top card):
+## Edge cases
+- Variant arrays are parallel by index — keep `v_image[]/v_label[]/v_sku[]/v_price[]` aligned.
+- Re-price from DB at checkout; the admin price is the source.
 
-| Field | Notes |
-|-------|-------|
-| **Title** | Required. |
-| **SKU** | Leave blank if the product uses variants. |
-| **Slug** | Blank = auto-generated from the title. |
-| **Price (AUD)** | Blank = **"Enquire"** (no fixed price). |
-| **Category** | Single category (supports the nested tree). |
-| **Status** | Draft or Published. |
-| **Feature on homepage** | Adds it to the homepage Featured row. |
-
-**Main image** — set via the media picker (choose from the library or upload). Used on the product page
-when there are no variant images, and as the default/card image.
-
-**Variants / sizes** — one row per size, each with: a compact **image** picker, a **label**
-(e.g. "65 × 38"), a **part number / SKU**, and an optional **price**. "Add size" appends a row; the
-remove (trash) button deletes one. Leave the whole section empty for a single-item product (then use the
-SKU + price above).
-
-**Description** — a rich-text (WYSIWYG) editor; stored as HTML and rendered on the product page.
-
-Buttons: **Save** (stays on the edit page with a "Product saved" banner), **View product** (opens the
-public page in a new tab), **Delete**.
-
-## Save behaviour & rules
-
-- Slug is auto-slugified from the title if left blank.
-- Price blank → stored as `null` → the storefront shows **"Enquire for price"**.
-- **Variants are replaced wholesale** on each save (existing rows deleted, then re-inserted in order),
-  so the form is the source of truth — don't expect partial edits to merge.
-- The main image is stored as a single URL pointing at a media-library file.
-- The `product_variants.image` column is **auto-created** on first save if missing (lazy migration).
-- Prices are re-validated server-side; variant products display per-variant pricing, not a single price.
-
-See also: [Media gallery](media-gallery.md) for the image picker, and
-[Payments & store modes](payments-and-modes.md) for how price/"Enquire" depends on store mode.
+## Acceptance
+- Filters combine + persist in the URL; category filter includes sub-categories.
+- Saving keeps you on the edit page; variants reflect exactly what's in the form.

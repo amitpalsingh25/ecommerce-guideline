@@ -1,41 +1,26 @@
-# Admin → Event Logs
+# Build spec — Event Logs
 
-Path: **`/admin/logs`**
+**Goal:** a lightweight system event log for troubleshooting.
 
-A chronological record of system events — useful for troubleshooting (did an email send? did a webhook
-arrive? did a save fail?).
+## Route
+- `GET /admin/logs` (filters) ; `POST /admin/logs` with `_action=clear` to empty (CSRF).
 
-## The list
+## Data — `logs`
+id, level enum(info,warn,error), category, message, meta JSON, created_at.
 
-Columns: **Level** badge, **Category**, **Message** (with any structured metadata underneath), **Time**.
-Newest first, capped at 300 rows.
+## Build — logger
+`log_event($category, $message, $level='info', $meta=[])` → insert a row (json-encode meta). Call it at
+key points: enquiry received/saved, email sent/failed, order created/paid, stripe session/webhook,
+contact submit, settings/product/hero saves, media edits, lazy migrations.
 
-## Filters
+## Build — page
+- Filters: level (info/warn/error) + category (dropdown of distinct categories).
+- Table: Level badge, Category, Message (+meta line under it), Time. Newest first, LIMIT 300.
+- "Clear logs" button (POST, CSRF) deletes all.
 
-- **Level** — `info`, `warn`, `error`.
-- **Category** — e.g. `enquiry`, `email`, `order`, `stripe`, `contact`, `system`.
+## Acceptance
+- Actions across the app produce log rows; filters narrow by level/category; clear empties the table.
 
-## What gets logged
-
-| Category | Examples |
-|----------|----------|
-| `enquiry` | Enquiry received / DB save result |
-| `email` | Whether enquiry/contact/order emails sent |
-| `order` | Order created (pending), order paid |
-| `stripe` | Checkout session created, webhook signature failures, API errors |
-| `contact` | Contact form submissions |
-| `system` | Settings saved, product/hero saves, media edits, lazy migrations |
-
-Levels: **info** (normal), **warn** (something skipped/non-fatal, e.g. email not sent), **error**
-(failures, e.g. bad webhook signature, DB error).
-
-## Clearing logs
-
-A **Clear logs** action (POST) empties the table. Use sparingly — it's your audit trail.
-
-## Troubleshooting tips
-
-- Emails not arriving? Filter **category = email** / **level = warn** to see send results, then check
-  Settings → Email (SMTP).
-- Payment not marked paid? Filter **category = stripe / order** to see webhook activity and signature
-  checks.
+## Troubleshooting guidance (document for operators)
+- Email issues → filter category=email / level=warn, then check SMTP settings.
+- Payment issues → filter category=stripe/order to see webhook + signature activity.

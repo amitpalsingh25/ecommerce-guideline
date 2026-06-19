@@ -1,28 +1,22 @@
-# Admin → Dashboard
+# Build spec — Dashboard
 
-Path: **`/admin`**
+**Goal:** an at-a-glance admin landing screen. Read-only.
 
-The landing screen after signing in. It's an at-a-glance overview, not an editor.
+## Route
+- `GET /admin` → `admin_dashboard()` (after `require_admin()`).
 
-## Stat cards
+## Data
+Count queries: products, product_variants, categories, blog_posts, enquiries, and enquiries where
+`status='new'`.
 
-Each card shows a live count and links to that section:
+## Build
+1. Render a grid of **stat cards**, each = a count + label, linking to its section:
+   Products→`/admin/products`, Variants→`/admin/products`, Categories→`/admin/categories`,
+   Blog posts→`/admin/blog`, Enquiries→`/admin/enquiries`, New enquiries→`/admin/enquiries`.
+2. Render **quick-action** buttons: Add product, Categories, Write post, Settings; plus a "New product"
+   button in the top bar.
+3. Wrap output in the admin layout (`respond_admin`).
 
-| Card | Links to |
-|------|----------|
-| **Products** | Products list |
-| **Variants** | Products list |
-| **Categories** | Categories |
-| **Blog posts** | Blog |
-| **Enquiries** | Enquiries |
-| **New enquiries** | Enquiries (count of `new` status) |
-
-## Quick actions
-
-Shortcut buttons: **Add product**, **Categories**, **Write post**, **Settings**, plus a **New product**
-button in the top bar.
-
-## Sidebar (all sections)
-
-Dashboard · Hero slideshow · Products · Categories · Media · Blog · Enquiries · Orders · Emails ·
-Event Logs · Settings. Each has its own guide in this folder.
+## Acceptance
+- Each card shows a live count and navigates to the right section.
+- No write actions on this page.

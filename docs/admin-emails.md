@@ -1,59 +1,38 @@
-# Admin → Emails
+# Build spec — Emails
 
-Path: **`/admin/emails`**
+**Goal:** editable notification templates with a branded HTML wrapper, live preview, and SMTP delivery.
 
-Manage every notification the site sends. Templates have sensible defaults in code; any edits are saved
-as overrides and merged on top.
+## Routes
+- `GET /admin/emails` — list. `GET/POST /admin/emails/{id}` — edit/save.
+- `POST /admin/emails/{id}/preview` (and/or GET) — render preview HTML (works even if disabled, with
+  sample data; accepts unsaved heading/body for live preview).
 
-## The list
+## Data
+- Defaults defined in code (`email_defaults()`), keyed by id, each: label, to(admin|customer), subject,
+  heading, body, with placeholder tokens.
+- Overrides + enabled flag stored in `setting('emails')`, merged over defaults by `email_template($id)`.
+- Templates to ship: `enquiry_admin`, `enquiry_customer`, `contact_admin`, `order_admin`, `order_customer`.
 
-Each row: **Email** (label), **Recipient** (the admin address or "Customer"), **Status** (On/Off), and
-**Manage**.
+## Build — list
+Table: label, recipient (admin address or "Customer"), Status On/Off, Manage.
 
-The notifications:
+## Build — edit
+Fields: Enable checkbox, Recipient (read-only), Subject, Heading, **Body** `<textarea class="richtext">`.
+Show placeholder list. **Live preview**: full-width iframe; JS posts current heading+body to the preview
+route (debounced/polled) → `srcdoc`, so it updates as you type. Save persists override under `emails`.
 
-| Template | Sent to | Fires when |
-|----------|---------|-----------|
-| **New enquiry — to admin** | Admin | A visitor submits an enquiry/cart request |
-| **Enquiry received — to customer** | Customer | (Confirmation of the above) |
-| **Contact form — to admin** | Admin | The contact form is submitted |
-| **New order — to admin** | Admin | A Stripe order is paid |
-| **Order confirmation — to customer** | Customer | (Confirmation of the paid order) |
+## Build — rendering
+- `email_replace($tpl,$vars)`: replace `{name}{email}{phone}{message}{order}{total}{site}{phone_co}
+  {email_co}` (escaped, nl2br); `{items}` → an HTML products table.
+- `email_wrap(heading,bodyHtml)`: branded shell (logo + brand colour from settings, accent bar, footer).
+- `render_email($id,$vars,$force=false)`: return `{subject,html}` or null if disabled (unless `$force`
+  for preview). Inject site/contact vars.
 
-## Manage a template
+## Build — sending & wiring
+- `send_mail()`: PHPMailer SMTP when `smtp_settings()` present, else `mail()` fallback.
+- Wire events: enquiry submit → `enquiry_admin` + `enquiry_customer`; contact form → `contact_admin`;
+  order paid (webhook) → `order_admin` + `order_customer`. Disabled template = send nothing.
 
-| Field | Notes |
-|-------|-------|
-| **Enable this email** | Off = this notification is never sent. |
-| **Recipient** | Read-only (admin address or "the customer"). |
-| **Subject** | Email subject line. |
-| **Heading** | Big heading inside the email. |
-| **Body** | Rich-text (WYSIWYG) editor; stored as HTML. |
-
-**Placeholders** (type them anywhere; they're filled at send time):
-
-```
-{name} {email} {phone} {message} {items} {order} {total} {site} {phone_co} {email_co}
-```
-
-`{items}` inserts the products table (SKU / item / qty). Others are simple text substitutions.
-
-### Live preview
-
-Below the form is a **full-width live preview** rendered with sample data that **updates as you type**
-(heading + body). It shows the real branded email shell — logo header, accent bar, content, footer — so
-you see exactly what recipients get. There's also a full-page preview link.
-
-## Delivery & wrapper
-
-- Every email is wrapped in a **branded HTML shell** (header with logo, coloured accent bar, footer with
-  contact details).
-- Sending uses the **SMTP** account from Settings → Email when configured, otherwise the server's
-  `mail()` as a fallback. Set SMTP up for reliable delivery.
-- A **disabled** template is skipped entirely (its event sends nothing).
-
-## Notes
-
-- Defaults live in code; saved edits are stored under the `emails` setting and merged over the defaults,
-  so you can always clear a field to fall back to the default text.
-- The same brand colours/logo from Settings flow into the email shell automatically.
+## Acceptance
+- Editing subject/heading/body + toggling enabled persists; live preview reflects edits before save;
+  disabling a template stops that email.

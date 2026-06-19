@@ -1,38 +1,24 @@
-# Admin → Orders
+# Build spec — Orders
 
-Path: **`/admin/orders`**
+**Goal:** record Stripe payments. Read-only admin list; rows created by the checkout flow.
 
-A read-only list of paid/attempted orders. Orders are **created by the checkout flow**, not entered by
-hand (see [Payments & store modes](payments-and-modes.md)).
+## Route
+- `GET /admin/orders` → `admin_orders()` (ensure orders table exists first).
 
-## The list
+## Data — `orders`
+id, email, name, phone, items JSON (line items), total DECIMAL, status enum(pending,paid,failed,
+cancelled), stripe_session, created_at. Auto-create the table if missing.
 
-Columns: **Order #**, **Customer** (name + email), **Items** (line count), **Total**, **Status** badge,
-**Date**. Capped at 500 rows, newest first.
+## Build — list
+Table: Order #, Customer (name + email), Items (line count), Total, Status badge, Date. Newest first,
+LIMIT 500. When `payments_enabled()` is false, show a notice that orders appear once Stripe + selling are
+on (store is in enquiry mode meanwhile).
 
-When **online payments are off**, a notice explains that orders only appear once **Stripe is enabled**
-(Settings → Payments) **and selling is on**. Until then the store runs in **enquiry mode**, so customer
-requests show under **Enquiries**, not here.
+## Order lifecycle (build in the payment flow — see [payments-and-modes](payments-and-modes.md))
+1. Checkout creates a **pending** order with items **re-priced from the DB** + total.
+2. Create Stripe Checkout Session (cURL) → redirect; store `stripe_session`.
+3. Webhook (`checkout.session.completed`, signature verified) → mark **paid** → send order emails.
+4. Session-create failure → **failed**.
 
-## Order statuses
-
-| Status | Meaning |
-|--------|---------|
-| **pending** | Order row created; customer sent to Stripe Checkout but payment not yet confirmed. |
-| **paid** | Stripe webhook confirmed payment (`checkout.session.completed`). |
-| **failed** | The Stripe Checkout session could not be created. |
-| **cancelled** | Reserved for cancelled/abandoned orders. |
-
-## How an order is created
-
-1. At checkout, an order row is written as **pending**, with line items **re-priced from the database**
-   (client prices are never trusted) and a total.
-2. The customer is redirected to Stripe's hosted checkout.
-3. On success, the **webhook** verifies the Stripe signature and marks the order **paid**, then sends the
-   order emails (admin notification + customer confirmation — see [Emails](admin-emails.md)).
-
-## Notes
-
-- The orders table is **auto-created** on first visit if it doesn't exist.
-- Items are stored as JSON line items on the order row.
-- Enquiries (no-payment requests) are separate from orders — check the Enquiries page for those.
+## Acceptance
+- Orders are never hand-created here; statuses reflect the Stripe flow; totals come from server pricing.

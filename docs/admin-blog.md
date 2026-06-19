@@ -1,36 +1,32 @@
-# Admin → Blog
+# Build spec — Blog
 
-Path: **`/admin/blog`**
+**Goal:** CRUD for articles rendered on the public blog.
 
-Manage articles/guides shown on the public blog.
+## Routes
+- `GET /admin/blog` — list. `GET /admin/blog/new`, `GET /admin/blog/{id}` — form.
+- `POST` → `admin_blog_save()`. `POST /admin/blog/{id}/delete`.
 
-## Post list
+## Data — `blog_posts`
+id, title, slug (unique, URL), excerpt, content TEXT (HTML), cover_image, category (free-text tag),
+author, status enum(draft,published), published_at.
 
-Columns: **Title**, **Category**, **Status** badge, **Published** date, **Edit**. "New post" creates one.
+## Build — list
+Table: Title, Category, Status badge, Published date, Edit. "New post" button.
 
-## New / edit post
+## Build — form
+Title (required), Slug (blank=auto), Category tag, Author (default = site name), Status, Excerpt,
+Cover image (upload), **Content** `<textarea class="richtext">` (WYSIWYG → HTML). Save + Delete.
 
-| Field | Notes |
-|-------|-------|
-| **Title** | Required. |
-| **Slug** | Blank = auto from title. Used in the URL. |
-| **Category tag** | Free-text label (e.g. "Guide", "Basics"). |
-| **Author** | Defaults to the site name. |
-| **Status** | Draft or Published. |
-| **Excerpt** | Short summary for cards/listings. |
-| **Cover image** | Upload; shown on the post and in cards. |
-| **Content** | Rich-text (WYSIWYG) editor; stored as HTML. |
+## Build — save
+1. CSRF; require title; slugify.
+2. Upload cover if provided (else keep existing).
+3. **published_at**: set to now the first time status becomes `published`; preserve it afterwards; keep
+   existing when reverting to draft.
+4. Insert/update.
 
-Buttons: Save, Delete.
+## Frontend
+Only `published` posts appear on `/blog`, the post page, and the homepage "From the blog" row. Render
+`content` as HTML; use excerpt + cover on cards.
 
-## Publishing behaviour
-
-- **`published_at`** is set the **first time** a post is published, and preserved afterwards (re-saving a
-  published post keeps the original date).
-- Saving as Draft keeps it off the public blog.
-- Only published posts appear on the public `/blog` and feed the homepage "From the blog" row.
-
-## Notes
-
-- Slug should stay stable once published (it's the article URL).
-- Cover images go through the standard upload; large images are handled by the media pipeline.
+## Acceptance
+- Publishing stamps a date once and keeps it; drafts stay hidden.
