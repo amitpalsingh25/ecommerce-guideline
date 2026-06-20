@@ -1,5 +1,7 @@
 # Build spec — Settings
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** one page of independent setting cards, each saving on its own; secrets encrypted.
 
 ## Route

@@ -1,5 +1,7 @@
 # Build spec — Store modes & Stripe payments
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** one codebase that runs **enquiry-first** by default and can be switched to **online selling**.
 
 ## Toggles — `setting('toggles')`

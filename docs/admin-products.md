@@ -1,5 +1,7 @@
 # Build spec — Products
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** CRUD for products with optional per-size **variants** and media-library images.
 
 ## Routes

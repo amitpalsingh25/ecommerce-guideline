@@ -1,5 +1,7 @@
 # Build spec — Hero (admin + render)
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** editable homepage banner with two modes — **slideshow** and **single image** — managed at
 `/admin/hero` and rendered by `render_hero()`.
 

@@ -1,5 +1,7 @@
 # Build spec — Customer accounts & commerce (future)
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Status:** NOT in the current build (it's guest-first, no customer accounts). This is the blueprint for
 adding full customer commerce: register, login, password reset, account area, cart, checkout, customer
 orders. Build it the same way as the rest (vanilla PHP, PDO, PHP 7.4-safe, server-rendered).

@@ -1,5 +1,7 @@
 # Build spec — Event Logs
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** a lightweight system event log for troubleshooting.
 
 ## Route

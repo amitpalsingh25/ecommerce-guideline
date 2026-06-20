@@ -1,5 +1,7 @@
 # Build spec — Enquiries
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** capture and manage no-payment customer requests (the default "enquiry mode" flow).
 
 ## Routes

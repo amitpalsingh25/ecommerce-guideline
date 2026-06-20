@@ -1,5 +1,7 @@
 # Build spec — Media library, picker & product imagery
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** a reusable image system: a library page, a picker modal for any image field, client-side
 compression, and a server-side image editor.
 

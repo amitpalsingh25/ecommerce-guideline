@@ -1,5 +1,7 @@
 # Build spec — Blog
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** CRUD for articles rendered on the public blog.
 
 ## Routes

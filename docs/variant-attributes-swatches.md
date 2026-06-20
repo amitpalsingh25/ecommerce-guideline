@@ -1,5 +1,7 @@
 # Build spec — Attribute variations & swatches (WooCommerce-style, future)
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Status:** NOT in the current build. Today a product has **flat variants** (rows of
 `label, sku, price, image, position`). This spec upgrades that to **attribute-driven variations** with
 **swatches** (colour / image / button) and per-variation pricing — like WooCommerce + a variation-swatches

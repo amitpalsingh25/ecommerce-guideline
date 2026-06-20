@@ -1,5 +1,7 @@
 # Build spec — Categories
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** CRUD for **self-nesting** categories used for navigation, filtering and URLs.
 
 ## Routes

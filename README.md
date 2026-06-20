@@ -10,6 +10,9 @@ This repository holds **documentation only** — no application code and no cred
 ➡️ **[BUILD-INSTRUCTIONS.md](BUILD-INSTRUCTIONS.md)** — the master blueprint: constraints, stack, file
 layout, routing, data model, settings system, build order, and gotchas. Read this first.
 
+➡️ **[docs/design-system.md](docs/design-system.md)** — exact visual foundation (fonts, colour tokens,
+buttons, card styles). Read this to make a rebuild *look* the same, not just behave the same.
+
 ## Per-section build specs
 
 Each doc = *how to build that section* (routes, data, UI, save logic, edge cases, acceptance):

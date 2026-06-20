@@ -1,5 +1,7 @@
 # Build spec — Dashboard
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** an at-a-glance admin landing screen. Read-only.
 
 ## Route

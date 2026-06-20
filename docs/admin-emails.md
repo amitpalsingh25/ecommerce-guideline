@@ -1,5 +1,7 @@
 # Build spec — Emails
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** editable notification templates with a branded HTML wrapper, live preview, and SMTP delivery.
 
 ## Routes

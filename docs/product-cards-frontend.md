@@ -1,9 +1,39 @@
 # Build spec — Product display cards (frontend)
 
+> Visual tokens (fonts/spacing/buttons): [design-system.md](design-system.md). This doc = **structure +
+> behaviour**, which matters more than colour.
+
 **Goal:** the product card used in grids and the **Featured** carousel — with **variant-image swatches**
 that swap the card image on **click**, no layout jump, and a clean hover. Vanilla CSS + JS, no framework.
 
 Used on: home (Featured), `/products`, category pages. Same component everywhere.
+
+## Structure & invariants (get this right — it's what makes cards look consistent)
+
+The card is a **flex column with 4 fixed zones**, in this order:
+
+```
+.prod-card (flex column, equal height in a row)
+ ├─ .prod-media     fixed height, image contain  ── ALWAYS same height across all cards
+ └─ .prod-body (flex column, flex:1)
+     ├─ .prod-head  ONE row: SKU/category (left)  ↔  swatches (right)   ← swatches live HERE
+     ├─ h3          title (can wrap to 2 lines)
+     └─ .prod-foot  margin-top:auto → ONE row: price (left) ↔ Add/View (right)
+```
+
+**Invariants (these are what the demo violated):**
+1. **Swatches belong in `.prod-head` (the meta line), never in the footer.** Putting them above the
+   buttons makes only *some* cards taller and knocks the buttons out of alignment with their neighbours.
+2. **`.prod-foot` is a single price↔action row, pinned with `margin-top:auto`.** That keeps the footer at
+   the bottom so all cards in a row end at the same baseline regardless of title length or swatch count.
+3. **`.prod-media` is a fixed height with `object-fit:contain`** (not a tall `cover` crop). Same image box
+   on every card; the product floats centered; nothing jumps when swatches swap the image.
+4. **One compact action**, not two full-width stacked buttons: price on the left, a single small **Add**
+   (or **View** for variant products) on the right.
+5. Card body uses `flex:1` so short and long titles still produce equal-height cards.
+
+Result: a clean grid where every card is the same height, the meta row carries the swatches, and the
+footer actions line up across the row — even when one product has swatches and another doesn't.
 
 ---
 

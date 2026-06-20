@@ -1,5 +1,7 @@
 # Build spec — Orders
 
+> Tokens, layout & structure reference: [design-system.md](design-system.md).
+
 **Goal:** record Stripe payments. Read-only admin list; rows created by the checkout flow.
 
 ## Route
