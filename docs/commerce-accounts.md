@@ -2,9 +2,34 @@
 
 > Tokens, layout & structure reference: [design-system.md](design-system.md).
 
-**Status:** NOT in the current build (it's guest-first, no customer accounts). This is the blueprint for
-adding full customer commerce: register, login, password reset, account area, cart, checkout, customer
-orders. Build it the same way as the rest (vanilla PHP, PDO, PHP 7.4-safe, server-rendered).
+**Status:** ✅ **BUILT** — register, login, logout, forgot/reset password, account area (enquiry + order
+history, profile), and an admin **Customers** tab are live. Still future: Stripe `customer_id` linkage at
+checkout, email verification, saved addresses. Below: the as-built design + the remaining future items.
+
+## As built (current implementation)
+
+- **Files:** `app/customer.php` (page handlers + `ensure_customers_table()`), customer helpers in
+  `app/auth.php` (`current_customer`, `require_customer`, `customer_session_set`, `customer_logout`),
+  routes in `public/index.php`, admin `admin_customers()`/`admin_customer_view()` in `app/admin.php`,
+  two email templates in `app/emails.php`.
+- **Table `customers`:** id, name, email (unique), password_hash, reset_token, reset_expires, created_at.
+  Lazy-created on first use.
+- **Routes:** `/register`, `/login`, `/logout`, `/forgot`, `/reset?token=`, `/account`,
+  `/account/profile`.
+- **Auth:** bcrypt (`password_hash`/`password_verify`); login stored in `$_SESSION['customer']`. Forgot
+  always shows the same message (no enumeration); reset token is 24-byte hex, **1-hour** expiry,
+  single-use. `require_customer()` redirects to `/login` with `after_login` return path.
+- **Account area:** shows the customer's **enquiries and orders matched by email** (no schema change to
+  orders/enquiries needed) + a profile form (name + optional new password).
+- **Emails:** `account_welcome` + `password_reset` (with `{reset_url}`) added to `email_defaults()`, so
+  they're editable in Admin → Emails with the live preview.
+- **Admin:** Customers list (name, email, enquiry count, joined) + per-customer view (their enquiries).
+- **Header:** the account icon points to `/account` when logged in, else `/login`.
+
+## Future blueprint (not yet built)
+
+The original full blueprint for the remaining pieces (Stripe `customer_id` linkage, email verification,
+saved addresses, checkout prefill/guest-gate):
 
 ---
 
