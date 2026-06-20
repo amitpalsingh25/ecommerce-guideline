@@ -21,6 +21,7 @@ Each doc = *how to build that section* (routes, data, UI, save logic, edge cases
 | [Products](docs/admin-products.md) | Products + variants |
 | [Categories](docs/admin-categories.md) | Nested categories |
 | [Media gallery](docs/media-gallery.md) | Library, picker modal, image editor, storefront imagery |
+| [Product cards (frontend)](docs/product-cards-frontend.md) | Card component, variant-swatch image swap, Featured carousel |
 | [Blog](docs/admin-blog.md) | Articles |
 | [Enquiries](docs/admin-enquiries.md) | Enquiry-mode requests |
 | [Orders](docs/admin-orders.md) | Stripe orders |
