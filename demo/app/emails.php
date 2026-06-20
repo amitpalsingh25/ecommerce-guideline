@@ -40,6 +40,20 @@ function email_defaults(): array
             'heading' => 'Thank you, {name}',
             'body' => "<p>Your order <strong>#{order}</strong> is confirmed. A receipt is below — total <strong>{total}</strong>.</p>{items}<p>We'll be in touch about dispatch. Questions? Call {phone_co}.</p>",
         ],
+        'account_welcome' => [
+            'label' => 'Welcome — account created',
+            'to' => 'customer',
+            'subject' => 'Welcome to {site}',
+            'heading' => 'Welcome, {name}',
+            'body' => "<p>Your account is ready. You can now track your enquiries and check out faster.</p><p>If you didn't create this account, please let us know.</p>",
+        ],
+        'password_reset' => [
+            'label' => 'Password reset — to customer',
+            'to' => 'customer',
+            'subject' => 'Reset your password — {site}',
+            'heading' => 'Reset your password',
+            'body' => "<p>Hi {name}, we received a request to reset your password. Click the button below to choose a new one. This link expires in 1 hour.</p><p style=\"margin:22px 0\"><a href=\"{reset_url}\" style=\"display:inline-block;background:#ea580c;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700\">Set a new password</a></p><p style=\"color:#8c8077;font-size:13px\">If you didn't request this, you can safely ignore this email.</p>",
+        ],
     ];
 }
 

@@ -11,6 +11,7 @@ $links = [
     ['/admin/blog', 'Blog', 'sign'],
     ['/admin/enquiries', 'Enquiries', 'mail'],
     ['/admin/orders', 'Orders', 'cart'],
+    ['/admin/customers', 'Customers', 'user'],
     ['/admin/emails', 'Emails', 'mail'],
     ['/admin/logs', 'Event Logs', 'clock'],
     ['/admin/settings', 'Settings', 'valve'],

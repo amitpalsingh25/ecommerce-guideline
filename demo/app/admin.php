@@ -22,6 +22,7 @@ function admin_dispatch(array $seg): void
         case 'blog':      admin_blog($seg); break;
         case 'enquiries': admin_enquiries($seg); break;
         case 'orders':    admin_orders(); break;
+        case 'customers': admin_customers($seg); break;
         case 'emails':    admin_emails($seg); break;
         case 'media':     admin_media($seg); break;
         case 'settings':  admin_settings(); break;
@@ -837,6 +838,48 @@ function admin_orders(): void
             ? '<table class="admin-table"><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th></tr></thead><tbody>' . $body . '</tbody></table>'
             : '<div class="admin-card">No orders yet.</div>');
     respond_admin($h, ['title' => 'Orders · Admin']);
+}
+
+// ---------- Customers ----------
+function admin_customers(array $seg): void
+{
+    require_once __DIR__ . '/customer.php';
+    ensure_customers_table();
+
+    $id = $seg[1] ?? '';
+    if ($id !== '' && ctype_digit((string)$id)) { admin_customer_view((int)$id); return; }
+
+    $rows = q_all('SELECT c.*, (SELECT COUNT(*) FROM enquiries e WHERE e.email = c.email) enq FROM customers c ORDER BY c.created_at DESC LIMIT 1000');
+    $body = '';
+    foreach ($rows as $c) {
+        $body .= '<tr><td style="font-weight:600">' . e($c['name']) . '</td>'
+            . '<td>' . e($c['email']) . '</td>'
+            . '<td>' . (int)$c['enq'] . '</td>'
+            . '<td style="font-size:12px;color:var(--muted)">' . e(fmt_date($c['created_at'])) . '</td>'
+            . '<td style="text-align:right"><a href="' . url('admin/customers/' . $c['id']) . '" class="btn btn-ghost" style="padding:6px 11px;font-size:13px">View</a></td></tr>';
+    }
+    $h = '<div class="admin-topbar"><h1>Customers (' . count($rows) . ')</h1></div>'
+        . ($rows ? '<table class="admin-table"><thead><tr><th>Name</th><th>Email</th><th>Enquiries</th><th>Joined</th><th></th></tr></thead><tbody>' . $body . '</tbody></table>' : '<div class="admin-card">No customer accounts yet.</div>');
+    respond_admin($h, ['title' => 'Customers · Admin']);
+}
+
+function admin_customer_view(int $id): void
+{
+    $c = q_one('SELECT * FROM customers WHERE id = ?', [$id]);
+    if (!$c) { http_response_code(404); respond_admin('<h1>Not found</h1>'); return; }
+    $enq = q_all('SELECT * FROM enquiries WHERE email = ? ORDER BY created_at DESC LIMIT 100', [$c['email']]);
+    $rows = '';
+    foreach ($enq as $en) {
+        $rows .= '<tr><td>#' . (int)$en['id'] . '</td><td>' . count(json_arr($en['items'])) . ' items</td><td><span class="badge ' . e($en['status']) . '">' . e($en['status']) . '</span></td><td>' . e(fmt_date($en['created_at'])) . '</td>'
+            . '<td style="text-align:right"><a href="' . url('admin/enquiries/' . $en['id']) . '" class="btn btn-ghost" style="padding:6px 11px;font-size:13px">Open</a></td></tr>';
+    }
+    $h = '<div class="admin-topbar"><h1>' . e($c['name']) . '</h1><a href="' . url('admin/customers') . '" class="btn btn-ghost">Back</a></div>'
+        . '<div class="admin-card" style="margin-bottom:20px;max-width:520px"><p style="margin:0 0 6px"><a href="mailto:' . e($c['email']) . '" style="color:var(--flame-deep)">' . e($c['email']) . '</a></p>'
+        . '<p style="margin:0;color:var(--muted);font-size:13px">Joined ' . e(fmt_date($c['created_at'])) . '</p></div>'
+        . '<div class="admin-card"><h3 style="margin-bottom:12px">Enquiries</h3>'
+        . ($rows ? '<table class="admin-table"><thead><tr><th>Ref</th><th>Items</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>' . $rows . '</tbody></table>' : '<p style="color:var(--muted)">No enquiries from this customer.</p>')
+        . '</div>';
+    respond_admin($h, ['title' => 'Customer · Admin']);
 }
 
 // ---------- Emails ----------

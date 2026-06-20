@@ -43,9 +43,17 @@ function dispatch(string $path, array $seg, string $APP): void
 
     // ---- Public routes ----
     require $APP . '/pages.php';
+    require $APP . '/customer.php';
 
     switch (true) {
         case $path === '/':                                 page_home(); break;
+        case $path === '/register':                         page_register(); break;
+        case $path === '/login':                            page_login(); break;
+        case $path === '/logout':                           page_logout(); break;
+        case $path === '/forgot':                           page_forgot(); break;
+        case $path === '/reset':                            page_reset(); break;
+        case $path === '/account':                          page_account(); break;
+        case $path === '/account/profile':                  page_account_profile(); break;
         case $path === '/products':                         page_products(); break;
         case $seg[0] === 'products' && isset($seg[1]):      page_product($seg[1]); break;
         case $path === '/categories':                       page_categories(); break;

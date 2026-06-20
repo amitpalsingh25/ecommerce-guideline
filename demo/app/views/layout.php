@@ -39,7 +39,7 @@ $tops = top_categories();
     </nav>
     <div class="header-actions">
       <a href="<?= url('products') ?>" class="icon-btn hide-sm" aria-label="Search"><?= icon('search') ?></a>
-      <a href="<?= url('admin') ?>" class="icon-btn hide-sm" aria-label="Account"><?= icon('user') ?></a>
+      <a href="<?= url(current_customer() ? 'account' : 'login') ?>" class="icon-btn hide-sm" aria-label="<?= current_customer() ? 'My account' : 'Log in' ?>"><?= icon('user') ?></a>
       <button class="icon-btn" data-cart-open aria-label="Open cart"><?= icon('cart') ?><span class="cart-count">0</span></button>
       <?php $catUrl = $brand['catalogueUrl'] ?? ''; ?>
       <a href="<?= $catUrl ? e($catUrl) : url('contact') ?>"<?= $catUrl ? ' target="_blank" download' : '' ?> class="btn btn-ghost" style="margin-left:6px">Catalogue</a>

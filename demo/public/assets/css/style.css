@@ -2238,6 +2238,26 @@ body.drawer-open {
 .prod-media.has-gallery { aspect-ratio: auto; height: auto; display: block; place-items: stretch; background: #fff; overflow: visible; color: inherit; }
 .product-detail { padding: 44px 0; }
 
+/* Auth pages (login/register/forgot/reset) */
+.auth-wrap { min-height: 70vh; display: grid; place-items: center; padding: 56px 24px; }
+.auth-card { width: 100%; max-width: 420px; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 34px 30px; box-shadow: 0 20px 50px -30px rgba(40, 20, 0, 0.4); }
+.auth-card h1 { font-size: 26px; font-weight: 800; margin: 0 0 4px; }
+.auth-sub { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
+.auth-alt { text-align: center; font-size: 14px; color: var(--muted); margin: 18px 0 0; }
+.auth-alt a { color: var(--flame-deep); font-weight: 600; }
+.form-ok { background: #e7f6ec; color: #1a7f43; border: 1px solid #bfe6cd; border-radius: 10px; padding: 11px 14px; font-size: 14px; margin: 0 0 16px; }
+
+/* Account area */
+.acct { padding: 48px 0 72px; }
+.acct-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+.acct-head h1 { font-size: clamp(26px, 3vw, 36px); font-weight: 800; margin: 8px 0 0; }
+.acct-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 20px; }
+.acct-card h3 { font-size: 17px; font-weight: 700; margin: 0 0 14px; }
+.acct-table { width: 100%; border-collapse: collapse; }
+.acct-table th { text-align: left; font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.acct-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
+.acct-table tr:last-child td { border-bottom: none; }
+
 /* Featured carousel */
 .feat-carousel { position: relative; }
 .feat-track { display: flex; gap: 24px; overflow-x: auto; overflow-y: visible; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 22px 4px 40px; margin: -22px 0 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }

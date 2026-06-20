@@ -42,3 +42,27 @@ function logout(): void
 {
     unset($_SESSION['user']);
 }
+
+// ---------- Customer accounts ----------
+function current_customer(): ?array
+{
+    return $_SESSION['customer'] ?? null;
+}
+
+function require_customer(): void
+{
+    if (!current_customer()) {
+        $_SESSION['after_login'] = current_path();
+        redirect('login');
+    }
+}
+
+function customer_session_set(array $c): void
+{
+    $_SESSION['customer'] = ['id' => (int)$c['id'], 'email' => $c['email'], 'name' => $c['name']];
+}
+
+function customer_logout(): void
+{
+    unset($_SESSION['customer']);
+}
