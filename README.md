@@ -13,6 +13,9 @@ layout, routing, data model, settings system, build order, and gotchas. Read thi
 ➡️ **[docs/design-system.md](docs/design-system.md)** — exact visual foundation (fonts, colour tokens,
 buttons, card styles). Read this to make a rebuild *look* the same, not just behave the same.
 
+➡️ **[demo/](demo/)** — the **actual working source** (the live project). Clone it to see the real file
+structure, run it locally, or edit and re-publish. See [demo/README.md](demo/README.md).
+
 ## Per-section build specs
 
 Each doc = *how to build that section* (routes, data, UI, save logic, edge cases, acceptance):

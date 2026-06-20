@@ -1,0 +1,9 @@
+# Local secrets / machine files — never commit
+.gh_token
+demo/app/config.local.php
+
+# User uploads / media library contents (keep the folder, not the files)
+demo/public/uploads/*
+!demo/public/uploads/.gitkeep
+
+.DS_Store
